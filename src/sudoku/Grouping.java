@@ -38,12 +38,12 @@ public class Grouping {
 				.map(Cell::getCandidates)
 				.collect(Collectors.toCollection(HashMultiset::create)); // Match up cells with the same candidates.
 
-		final HashMultimap<Integer, Set<Value>>
+//		final HashMultimap<Integer, Set<Value>>
 		// Filter by completed candidate sets.
 		candidateSet.entrySet().parallelStream()
 				.filter(e -> e.getCount() == e.getElement().size())
 				.map(Multiset.Entry::getElement)
-				.forEach(s -> s.parallelStream().forEach(c -> c));
+				.forEach(s -> s.parallelStream().forEach(c -> {return;}));
 	}
 
 	public Set<Value> getFoundValues() {

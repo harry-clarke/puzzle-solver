@@ -57,12 +57,12 @@ public class Cell {
 		);
 
 		// (3)
-		remaining = Sets.difference(remaining,
-				groupings.parallelStream()
-						.map(Grouping::getCells)
-						.map(this::findSubGroup)
-						.reduce(Sets::union).get()
-		);
+//		remaining = Sets.difference(remaining,
+//				groupings.parallelStream()
+//						.map(Grouping::getCells)
+//						.map(this::findSubGroup)
+//						.reduce(Sets::union).get()
+//		);
 
 		// (4)
 		if (remaining.size() == 0)
@@ -73,7 +73,7 @@ public class Cell {
 		}
 
 		// (5)
-
+		return null;
 	}
 
 	public void addSubGroup(final ImmutableCollection<Cell> subGroup) {
