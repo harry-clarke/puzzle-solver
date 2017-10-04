@@ -6,16 +6,8 @@ package i_paper_maths_puzzle;
  */
 public class MathsPuzzleSolver {
 
-	private static final String[] EXAMPLE_1 = new String[] {
-			"1-6+5",
-			"* * *",
-			"7-3*4",
-			"* - *",
-			"8+9-2"
-	};
-
 	public static void main(final String[] args) {
-		new MathsPuzzle(EXAMPLE_1);
+		new MathsPuzzle(MathsPuzzleTest.EXAMPLE_1);
 	}
 
 }

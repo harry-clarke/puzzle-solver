@@ -13,7 +13,7 @@ public interface Cell {
 
 	static Cell parseChar(final char c) {
 		switch (c) {
-			case ' ': return new NullCell();
+			case ' ': return NullCell.INSTANCE;
 
 			case '*': return Operator.MULTIPLY;
 			case '/': return Operator.DIVIDE;

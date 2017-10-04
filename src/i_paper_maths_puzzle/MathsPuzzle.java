@@ -2,6 +2,7 @@ package i_paper_maths_puzzle;
 
 import i_paper_maths_puzzle.cell.Cell;
 
+import static i_paper_maths_puzzle.Line.CELL_COUNT;
 import static i_paper_maths_puzzle.Line.LINE_LENGTH;
 
 /**
@@ -11,7 +12,10 @@ import static i_paper_maths_puzzle.Line.LINE_LENGTH;
 public class MathsPuzzle {
 
 	private final Cell[][] cells = new Cell[LINE_LENGTH][LINE_LENGTH];
-	
+
+	private final int[] rowAnswers = new int[CELL_COUNT];
+	private final int[] colAnswers = new int[CELL_COUNT];
+
 	public MathsPuzzle(final String[] lines) {
 		parseLines(lines);
 		assertValid();
@@ -27,17 +31,34 @@ public class MathsPuzzle {
 		}
 	}
 
+	public Cell getCell(final int x, final int y) {
+		return cells[x][y];
+	}
+
+	public int getRowAnswer(final int y) {
+		return rowAnswers[y];
+	}
+
+	public int getColAnswer(final int x) {
+		return colAnswers[x];
+	}
+
 	private void parseLines(String[] lines) {
-		if (lines.length != LINE_LENGTH)
-			throw new IllegalArgumentException("Too many lines. Expected " + LINE_LENGTH);
 		for (int j = 0; j < LINE_LENGTH; j++) {
 			final String line = lines[j];
-			if (line.length() != LINE_LENGTH)
-				throw new IllegalArgumentException("Line too long. Expected " + LINE_LENGTH);
 			for (int i = 0; i < LINE_LENGTH; i++) {
 				final Cell c = Cell.parseChar(line.charAt(i));
 				cells[i][j] = c;
 			}
+		}
+
+		for (int j = 0; j < LINE_LENGTH; j+=2) {
+			rowAnswers[j/2] = Integer.parseInt(lines[j].substring(LINE_LENGTH+1));
+		}
+
+		final String[] colAnswersStr = lines[LINE_LENGTH+1].split(",");
+		for (int i = 0; i < CELL_COUNT; i++) {
+			colAnswers[i] = Integer.parseInt(colAnswersStr[i]);
 		}
 	}
 }
