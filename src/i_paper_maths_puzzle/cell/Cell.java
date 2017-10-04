@@ -1,6 +1,8 @@
 package i_paper_maths_puzzle.cell;
 
 
+import java.util.Optional;
+
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 03/10/2017.
