@@ -46,13 +46,13 @@ public class MathsPuzzle {
 	}
 
 	private void assertValid() {
-		final int[] blanks = new int[] {1,3};
-		for (final int i : blanks) {
-			for (final int j : blanks) {
-				if (cells[i][j].getType() != Cell.CellType.NULL)
-					throw new IllegalArgumentException("Cell (" + i + "," + j + ") should be null");
-			}
-		}
+		IntStream.of(1,3).forEach(i ->
+				IntStream.of(1,3).forEach(j -> {
+					if (cells[i][j].getType() != Cell.CellType.NULL)
+						throw new IllegalArgumentException("Cell (" + i + "," + j + ") should be null");
+				})
+		);
+
 	}
 
 	public Cell getCell(final int x, final int y) {
