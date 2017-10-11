@@ -1,6 +1,4 @@
-package i_paper_maths_puzzle.cell;
-
-import java.util.HashMap;
+package i_paper_maths_puzzle.pojos;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).

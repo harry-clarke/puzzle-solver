@@ -1,9 +1,7 @@
 package i_paper_maths_puzzle;
 
-import i_paper_maths_puzzle.cell.Cell;
-import i_paper_maths_puzzle.cell.NullCell;
-import i_paper_maths_puzzle.cell.Number;
-import i_paper_maths_puzzle.cell.Operator;
+import i_paper_maths_puzzle.pojos.*;
+import i_paper_maths_puzzle.pojos.Number;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

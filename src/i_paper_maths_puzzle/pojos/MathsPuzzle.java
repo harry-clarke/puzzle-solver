@@ -1,24 +1,21 @@
-package i_paper_maths_puzzle;
+package i_paper_maths_puzzle.pojos;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
-import i_paper_maths_puzzle.cell.Cell;
-import i_paper_maths_puzzle.cell.Number;
 import utils.ClassUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static i_paper_maths_puzzle.Line.CELL_COUNT;
-import static i_paper_maths_puzzle.Line.LINE_LENGTH;
+import static i_paper_maths_puzzle.pojos.Line.CELL_COUNT;
+import static i_paper_maths_puzzle.pojos.Line.LINE_LENGTH;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 03/10/2017.
  */
 public class MathsPuzzle {
-
 	private final Cell[][] cells = new Cell[LINE_LENGTH][LINE_LENGTH];
 
 	private final Table<Integer, Integer, Set<Number>> values;

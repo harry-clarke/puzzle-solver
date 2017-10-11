@@ -1,7 +1,5 @@
 package utils;
 
-import i_paper_maths_puzzle.cell.Cell;
-
 import java.util.Optional;
 
 /**

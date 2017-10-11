@@ -1,7 +1,5 @@
-package i_paper_maths_puzzle.cell;
+package i_paper_maths_puzzle.pojos;
 
-
-import java.util.Optional;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).

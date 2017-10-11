@@ -1,6 +1,6 @@
-package i_paper_maths_puzzle;
+package i_paper_maths_puzzle.pojos;
 
-import i_paper_maths_puzzle.cell.Operator;
+import i_paper_maths_puzzle.pojos.Operator;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
