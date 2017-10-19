@@ -2,8 +2,8 @@ package finite_groupings;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.sun.istack.internal.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -102,7 +102,7 @@ public class GroupingImpl<E> implements Grouping<E> {
 		}
 
 		@Override
-		public int compareTo(@NotNull CellPriority o) {
+		public int compareTo(@Nonnull CellPriority o) {
 			return Integer.compare(count, o.count);
 		}
 	}
