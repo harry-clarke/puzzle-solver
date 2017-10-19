@@ -60,4 +60,8 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	public Optional<E> getValue() {
 		return Optional.ofNullable(value);
 	}
+
+	public Set<Grouping<E>> getGroupings() {
+		return groupings;
+	}
 }
