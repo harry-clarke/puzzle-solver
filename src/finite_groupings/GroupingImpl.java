@@ -10,12 +10,11 @@ import java.util.*;
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 15/10/2017.
  */
-public class GroupingImpl<E> implements Grouping<E> {
+public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListener<E> {
 
 	private static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
 	private static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
 
-	private final Map<Cell, Map<E, Runnable>> assumptions;
 	private final Map<Cell<E>, CellPriority> cellPriorities;
 	private final PriorityQueue<CellPriority> cellQueue;
 	private final Set<E> values;
@@ -27,20 +26,18 @@ public class GroupingImpl<E> implements Grouping<E> {
 		this.cellPriorities = Maps.asMap(cellQueue, CellPriority::new);
 		this.cellQueue = new PriorityQueue<>(cellPriorities.values());
 		this.values = values;
-		this.assumptions = new HashMap<>(cellQueue.size());
 
-		cellQueue.parallelStream().forEach(c -> c.addToGrouping(this));
+		cellQueue.parallelStream().forEach(c -> c.addCellPossibilityListener(this));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void onCellAssumptionUpdate(final Cell<E> cell, final Map<E, Runnable> assumptions) {
+	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!cellPriorities.containsKey(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
-		synchronized (this.assumptions) {
-			this.assumptions.put(cell, assumptions);
-		}
 		synchronized (values) {
-			final Set<E> possibilities = Sets.intersection(values, assumptions.keySet());
 			if (possibilities.size() == 1) {
 				for (final E possibility : possibilities) {
 					setCell(cell, possibility);
@@ -49,12 +46,12 @@ public class GroupingImpl<E> implements Grouping<E> {
 		}
 	}
 
-	private void setCell(final Cell<E> cell, final E value) {
-		values.remove(value);
-		cell.setValue(value);
-		cellQueue.remove(cellPriorities.get(cell));
-		assumptions.get(cell).get(value).run();
-		update();
+	@Override
+	public void increaseCellPriority(final Cell<E> cell) {
+		final CellPriority cellPriority = cellPriorities.get(cell);
+		cellQueue.remove(cellPriority);
+		cellPriority.count += 1;
+		cellQueue.add(cellPriority);
 	}
 
 	public void update() {
@@ -66,11 +63,18 @@ public class GroupingImpl<E> implements Grouping<E> {
 			cell.count = 0;
 			cellQueue.add(cell);
 		}
-		cell.cell.updateAssumptions();
+		cell.cell.updatePossibilities();
+	}
+
+	private void setCell(final Cell<E> cell, final E value) {
+		values.remove(value);
+		cellQueue.remove(cellPriorities.get(cell));
+		cell.setValue(value);
+		update();
 	}
 
 	/**
-	 * If there's only one value left, and only cell left, pairs them together.
+	 * If there's only one value left, and only cell left, pair them together.
 	 */
 	private void lastManStandingCheck() {
 		if (values.size() != 1)
@@ -80,14 +84,6 @@ public class GroupingImpl<E> implements Grouping<E> {
 			throw new IllegalStateException();
 		final CellPriority cellPriority = cellQueue.poll();
 		setCell(cellPriority.cell, value);
-	}
-
-	@Override
-	public void increaseCellPriority(final Cell<E> cell) {
-		final CellPriority cellPriority = cellPriorities.get(cell);
-		cellQueue.remove(cellPriority);
-		cellPriority.count += 1;
-		cellQueue.add(cellPriority);
 	}
 
 	private class CellPriority implements Comparable<CellPriority> {

@@ -1,10 +1,15 @@
 package finite_groupings;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
+import static com.google.common.base.Functions.forSupplier;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
@@ -12,56 +17,111 @@ import java.util.Set;
  */
 public abstract class AbstractCell<E> implements Cell<E> {
 
-	private final Set<Grouping<E>> groupings;
-
+	private final ValueUpdater valueUpdater;
+	private final Set<Cell.CellPossibilityListener<E>> possibilityListeners;
+	private Set<E> possibilities;
 	private E value;
 
-	public AbstractCell() {
-		groupings = Sets.newConcurrentHashSet();
-		value = null;
+	public AbstractCell(final Set<E> possibilities) {
+		this.value = null;
+		this.valueUpdater = new ValueUpdater(possibilities);
+		this.possibilityListeners = Sets.newConcurrentHashSet();
+		this.possibilities = Sets.newConcurrentHashSet(possibilities);
 	}
 
 	/**
-	 * Registers the cell to a specific grouping.
-	 * A cell could belong to multiple groupings,
-	 * and should notify all groupings of any changes to its state.
-	 *
-	 * @param grouping The grouping to register.
+	 * {@inheritDoc}
 	 */
 	@Override
-	public void addToGrouping(final Grouping<E> grouping) {
-		groupings.add(grouping);
+	public void addCellPossibilityListener(final @Nonnull CellPossibilityListener<E> listener) {
+		possibilityListeners.add(listener);
 	}
 
 	/**
-	 * Looks at the state of the grouping and determines what possible values this cell could have.
-	 * When an assumption is correct, the cell is set and then the runnable is called.
-	 * The Runnable is used to add any extra information about other cells that this assumption opens up.
-	 * For example, which cells should update their assumptions.
+	 * {@inheritDoc}
 	 */
 	@Override
-	public final void updateAssumptions() {
-		final Map<E,Runnable> assumptions = createAssumptions();
-		groupings.forEach(g -> g.onCellAssumptionUpdate(this, assumptions));
+	public void addCellValueListener(final @Nonnull CellValueListener<E> listener) {
+		valueUpdater.addCellValueListener(listener);
 	}
 
-	protected abstract Map<E,Runnable> createAssumptions();
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void addCellValueListener(final @Nonnull CellValueListener<E> listener, final @Nonnull E value) {
+		valueUpdater.addCellValueListener(listener, value);
+	}
 
 	/**
 	 * Sets the value of a cell.
-	 *
 	 * @param value The value to set the cell to.
 	 */
 	@Override
-	public void setValue(final E value) {
-		this.value = value;
+	public void setValue(final @Nonnull E value) {
+		valueUpdater.onCellValueUpdate(value);
+		possibilities = Set.of(value);
+		informPossibilityListeners();
 	}
 
-	public Optional<E> getValue() {
+	/**
+	 * {@inheritDoc}
+	 * Todo: Prevent two different set implementations from being used.
+	 */
+	@Override
+	public void reducePossibilities(final Set<E> possibilities) {
+		this.possibilities = Sets.intersection(this.possibilities, possibilities);
+		informPossibilityListeners();
+	}
+
+	/**
+	 * Calls all possibility listeners and informs them that this cell has been updated.
+	 */
+	protected final void informPossibilityListeners() {
+		synchronized (possibilityListeners) {
+			synchronized (possibilities) {
+				possibilityListeners.parallelStream()
+						.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
+			}
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Nonnull
+	@Override
+	public Set<E> getPossibilities() {
+		return Sets.newConcurrentHashSet(possibilities);
+	}
+
+	public @Nonnull Optional<E> getValue() {
 		return Optional.ofNullable(value);
 	}
 
-	public Set<Grouping<E>> getGroupings() {
-		return groupings;
+	/**
+	 * Wrapper class for updating all value listeners.
+	 */
+	class ValueUpdater {
+		private final Set<Cell.CellValueListener<E>> vagueListeners;
+		private final Multimap<E, Cell.CellValueListener<E>> specificListeners;
+
+		public ValueUpdater(final Set<E> possibilities) {
+			vagueListeners = Sets.newConcurrentHashSet();
+			specificListeners = HashMultimap.create();
+		}
+
+		public void addCellValueListener(final @Nonnull CellValueListener<E> listener) {
+			this.vagueListeners.add(listener);
+		}
+
+		public void addCellValueListener(final @Nonnull CellValueListener<E> listener, @Nonnull E value) {
+			this.specificListeners.put(value, listener);
+		}
+
+		public void onCellValueUpdate(final E value) {
+			vagueListeners.parallelStream().forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
+			specificListeners.get(value).parallelStream().forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
+		}
 	}
 }

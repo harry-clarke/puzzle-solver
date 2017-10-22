@@ -1,5 +1,9 @@
 package finite_groupings;
 
+import javax.annotation.Nonnull;
+import java.util.Optional;
+import java.util.Set;
+
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 15/10/2017.
@@ -7,24 +11,68 @@ package finite_groupings;
 public interface Cell<E> {
 
 	/**
-	 * Registers the cell to a specific grouping.
-	 * A cell could belong to multiple groupings,
-	 * and should notify all groupings of any changes to its state.
-	 * @param grouping The grouping to register.
+	 * @param listener A listener to be called when the cell's possibilities change.
 	 */
-	void addToGrouping(Grouping<E> grouping);
+	void addCellPossibilityListener(@Nonnull CellPossibilityListener<E> listener);
 
 	/**
-	 * Looks at the state of the grouping and determines what possible values this cell could have.
+	 * @param listener A listener to be called when the cell's value changes.
+	 */
+	void addCellValueListener(@Nonnull CellValueListener<E> listener);
+
+	/**
+	 * @param value The value that triggers a call to this listener.
+	 * @param listener A listener to be called when the cell's value changes to the given value.
+	 */
+	void addCellValueListener(@Nonnull CellValueListener<E> listener, @Nonnull E value);
+
+	/**
+	 * Reduces the possibilities of values that this cell can be by intersecting
+	 * its existing set of possibilities with the new set.
+	 * @param possibilities A set of possibilities that this cell can be.
+	 *                      If an existing possibility isn't in this set, it's removed,
+	 *                      and vice verse.
+	 */
+	void reducePossibilities(Set<E> possibilities);
+
+	/**
+	 * Looks at the state of the cell and determines what possible values this cell could have.
 	 * When an assumption is correct, the cell is set and then the runnable is called.
 	 * The Runnable is used to add any extra information about other cells that this assumption opens up.
 	 * For example, which cells should update their assumptions.
 	 */
-	void updateAssumptions();
+	void updatePossibilities();
+
+	/**
+	 * @return A set of all possible values for this cell.
+	 * Returns a singleton set if the cell value is set.
+	 */
+	@Nonnull Set<E> getPossibilities();
 
 	/**
 	 * Sets the value of a cell.
 	 * @param value The value to set the cell to.
 	 */
-	void setValue(E value);
+	void setValue(@Nonnull E value);
+
+	/**
+	 * @return The value of the cell if set, otherwise Nothing.
+	 */
+	@Nonnull Optional<E> getValue();
+
+	@FunctionalInterface
+	interface CellPossibilityListener<E> {
+		/**
+		 * @param cell The cell that has been updated.
+		 */
+		void onCellPossibilityUpdate(@Nonnull Cell<E> cell, @Nonnull Set<E> possibilities);
+	}
+
+	@FunctionalInterface
+	interface CellValueListener<E> {
+		/**
+		 * @param cell The cell that has been updated.
+		 */
+		void onCellValueUpdate(@Nonnull Cell<E> cell, @Nonnull E value);
+	}
 }
