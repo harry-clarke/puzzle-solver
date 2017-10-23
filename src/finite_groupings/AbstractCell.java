@@ -59,6 +59,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 */
 	@Override
 	public void setValue(final @Nonnull E value) {
+		this.value = value;
 		valueUpdater.onCellValueUpdate(value);
 		possibilities = Set.of(value);
 		informPossibilityListeners();
