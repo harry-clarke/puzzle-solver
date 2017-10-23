@@ -12,14 +12,14 @@ import java.util.*;
  */
 public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListener<E> {
 
-	private static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
-	private static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
+	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
+	protected static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
 
 	private final Map<Cell<E>, CellPriority> cellPriorities;
 	private final PriorityQueue<CellPriority> cellQueue;
 	private final Set<E> values;
 
-	public GroupingImpl(final Set<Cell<E>> cellQueue, final Set<E> values) {
+	public GroupingImpl(@Nonnull final Set<Cell<E>> cellQueue, @Nonnull final Set<E> values) {
 		if (cellQueue.size() > values.size())
 			throw new IllegalArgumentException(TOO_MANY_CELLS_EXCEPTION_MSG);
 
@@ -39,15 +39,13 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
 		synchronized (values) {
 			if (possibilities.size() == 1) {
-				for (final E possibility : possibilities) {
-					setCell(cell, possibility);
-				}
+				possibilities.stream().findFirst().ifPresent(p -> setCell(cell, p));
 			}
 		}
 	}
 
 	@Override
-	public void increaseCellPriority(final Cell<E> cell) {
+	public void increaseCellPriority(final @Nonnull Cell<E> cell) {
 		final CellPriority cellPriority = cellPriorities.get(cell);
 		cellQueue.remove(cellPriority);
 		cellPriority.count += 1;
@@ -55,6 +53,9 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	}
 
 	public void update() {
+//		Insert grouping techniques here.
+		lastManStandingCheck();
+
 		final CellPriority cell;
 		synchronized (cellQueue) {
 			if (cellQueue.isEmpty())
@@ -66,7 +67,19 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		cell.cell.updatePossibilities();
 	}
 
-	private void setCell(final Cell<E> cell, final E value) {
+	public Map<Cell<E>, CellPriority> getCellPriorities() {
+		return cellPriorities;
+	}
+
+	public PriorityQueue<CellPriority> getCellQueue() {
+		return cellQueue;
+	}
+
+	public Set<E> getValues() {
+		return values;
+	}
+
+	protected void setCell(final Cell<E> cell, final E value) {
 		values.remove(value);
 		cellQueue.remove(cellPriorities.get(cell));
 		cell.setValue(value);
@@ -76,7 +89,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	/**
 	 * If there's only one value left, and only cell left, pair them together.
 	 */
-	private void lastManStandingCheck() {
+	protected void lastManStandingCheck() {
 		if (values.size() != 1)
 			return;
 		final E value = values.stream().findFirst().orElseThrow(IllegalStateException::new);
@@ -86,7 +99,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		setCell(cellPriority.cell, value);
 	}
 
-	private class CellPriority implements Comparable<CellPriority> {
+	protected class CellPriority implements Comparable<CellPriority> {
 
 		private int count;
 
