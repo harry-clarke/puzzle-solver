@@ -72,7 +72,10 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	@Override
 	public void reducePossibilities(final Set<E> possibilities) {
 		this.possibilities = Sets.intersection(this.possibilities, possibilities);
-		informPossibilityListeners();
+		if (possibilities.size() == 1)
+			setValue(possibilities.stream().findFirst().get());
+		else
+			informPossibilityListeners();
 	}
 
 	/**
@@ -80,10 +83,8 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 */
 	protected final void informPossibilityListeners() {
 		synchronized (possibilityListeners) {
-			synchronized (possibilities) {
-				possibilityListeners.parallelStream()
-						.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
-			}
+			possibilityListeners.parallelStream()
+					.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
 		}
 	}
 

@@ -110,7 +110,7 @@ class AbstractCellTest {
 
 
 
-	private static class BooleanAbstractCell extends AbstractCell<Boolean> {
+	public static class BooleanAbstractCell extends AbstractCell<Boolean> {
 		public BooleanAbstractCell() {
 			super(FULL_SET);
 		}
@@ -124,7 +124,7 @@ class AbstractCellTest {
 	/**
 	 * Todo: Replace with JMockit.
 	 */
-	private static class TestListener {
+	public static class TestListener {
 		public boolean called = false;
 
 		public void call() {

@@ -19,15 +19,15 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	private final PriorityQueue<CellPriority> cellQueue;
 	private final Set<E> values;
 
-	public GroupingImpl(@Nonnull final Set<Cell<E>> cellQueue, @Nonnull final Set<E> values) {
-		if (cellQueue.size() > values.size())
+	public GroupingImpl(@Nonnull final Set<Cell<E>> cells, @Nonnull final Set<E> values) {
+		if (cells.size() > values.size())
 			throw new IllegalArgumentException(TOO_MANY_CELLS_EXCEPTION_MSG);
 
-		this.cellPriorities = Maps.asMap(cellQueue, CellPriority::new);
+		this.cellPriorities = Maps.asMap(cells, CellPriority::new);
 		this.cellQueue = new PriorityQueue<>(cellPriorities.values());
 		this.values = values;
 
-		cellQueue.parallelStream().forEach(c -> c.addCellPossibilityListener(this));
+		cells.parallelStream().forEach(c -> c.addCellPossibilityListener(this));
 	}
 
 	/**
@@ -37,7 +37,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!cellPriorities.containsKey(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
-		synchronized (values) {
+		synchronized (possibilities) {
 			if (possibilities.size() == 1) {
 				possibilities.stream().findFirst().ifPresent(p -> setCell(cell, p));
 			}
