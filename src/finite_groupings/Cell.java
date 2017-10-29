@@ -63,6 +63,11 @@ public interface Cell<E> {
 	 */
 	@Nonnull Optional<E> getValue();
 
+	/**
+	 * @return True if a value has been set, otherwise false.
+	 */
+	boolean hasValue();
+
 	@FunctionalInterface
 	interface CellPossibilityListener<E> {
 		/**

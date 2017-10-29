@@ -107,6 +107,14 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	}
 
 	/**
+	 * @return True if a value has been set, otherwise false.
+	 */
+	@Override
+	public boolean hasValue() {
+		return getValue().isPresent();
+	}
+
+	/**
 	 * Wrapper class for updating all value listeners.
 	 */
 	class ValueUpdater {

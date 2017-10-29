@@ -1,6 +1,7 @@
 package finite_groupings;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -11,22 +12,22 @@ import java.util.*;
  */
 public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListener<E> {
 
-	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
+	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More allCells than values to put in those allCells.";
 	protected static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
 
-	private final Map<Cell<E>, CellPriority> cellPriorities;
-	private final PriorityQueue<CellPriority> cellQueue;
+	private final ImmutableSet<Cell<E>> allCells;
+	private final Set<Cell<E>> unpairedCells;
 	private final Set<E> values;
 
-	public GroupingImpl(@Nonnull final Set<Cell<E>> cells, @Nonnull final Set<E> values) {
+	public GroupingImpl(final @Nonnull Set<Cell<E>> cells,
+						final @Nonnull Set<E> values) {
 		if (cells.size() > values.size())
 			throw new IllegalArgumentException(TOO_MANY_CELLS_EXCEPTION_MSG);
+		this.allCells = ImmutableSet.copyOf(cells);
+		this.unpairedCells = Sets.newHashSet(Sets.filter(allCells, Cell::hasValue));
+		this.values = Sets.newHashSet(values);
 
-		this.cellPriorities = Maps.asMap(cells, CellPriority::new);
-		this.cellQueue = new PriorityQueue<>(cellPriorities.values());
-		this.values = values;
-
-		cells.parallelStream().forEach(c -> c.addCellListener(this::setCell, this));
+		cells.parallelStream().forEach(c -> c.addCellListener(this::onCellValueSet, this));
 	}
 
 	/**
@@ -34,47 +35,23 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	 */
 	@Override
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
-		if (!cellPriorities.containsKey(cell))
+		if (!allCells.contains(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
-	}
-
-	@Override
-	public void increaseCellPriority(final @Nonnull Cell<E> cell) {
-		final CellPriority cellPriority = cellPriorities.get(cell);
-		cellQueue.remove(cellPriority);
-		cellPriority.count += 1;
-		cellQueue.add(cellPriority);
+		update();
 	}
 
 	public void update() {
 //		Insert grouping techniques here.
 		lastManStandingCheck();
-
-		final CellPriority cell;
-		if (cellQueue.isEmpty())
-			return;
-		cell = cellQueue.poll();
-		cell.count = 0;
-		cellQueue.add(cell);
-		cell.cell.updatePossibilities();
-	}
-
-	public Map<Cell<E>, CellPriority> getCellPriorities() {
-		return cellPriorities;
-	}
-
-	public PriorityQueue<CellPriority> getCellQueue() {
-		return cellQueue;
 	}
 
 	public Set<E> getValues() {
 		return values;
 	}
 
-	protected void setCell(final @Nonnull Cell<E> cell, @Nonnull final E value) {
+	protected void onCellValueSet(final @Nonnull Cell<E> cell, final @Nonnull E value) {
 		values.remove(value);
-		cellQueue.remove(cellPriorities.get(cell));
-		cell.setValue(value);
+		unpairedCells.remove(cell);
 		update();
 	}
 
@@ -82,29 +59,12 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	 * If there's only one value left, and only cell left, pair them together.
 	 */
 	protected void lastManStandingCheck() {
-		if (values.size() != 1)
+		if (unpairedCells.size() != 1 || values.size() != 1)
 			return;
-		final E value = values.stream().findFirst().orElseThrow(IllegalStateException::new);
-		if (cellQueue.size() != 1)
-			throw new IllegalStateException();
-		final CellPriority cellPriority = cellQueue.poll();
-		setCell(cellPriority.cell, value);
-	}
-
-	protected class CellPriority implements Comparable<CellPriority> {
-
-		private int count;
-
-		private final Cell<E> cell;
-
-		CellPriority(Cell<E> cell) {
-			this.count = 1;
-			this.cell = cell;
-		}
-
-		@Override
-		public int compareTo(@Nonnull CellPriority o) {
-			return Integer.compare(count, o.count);
-		}
+		unpairedCells.stream().findFirst().ifPresent(
+				cell -> values.stream().findFirst().ifPresent(
+						value -> cell.setValue(value)
+				)
+		);
 	}
 }
