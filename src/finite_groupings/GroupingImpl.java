@@ -1,7 +1,6 @@
 package finite_groupings;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -27,7 +26,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		this.cellQueue = new PriorityQueue<>(cellPriorities.values());
 		this.values = values;
 
-		cells.parallelStream().forEach(c -> c.addCellPossibilityListener(this));
+		cells.parallelStream().forEach(c -> c.addCellListener(this::setCell, this));
 	}
 
 	/**
@@ -37,11 +36,6 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!cellPriorities.containsKey(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
-		synchronized (possibilities) {
-			if (possibilities.size() == 1) {
-				possibilities.stream().findFirst().ifPresent(p -> setCell(cell, p));
-			}
-		}
 	}
 
 	@Override
@@ -57,13 +51,11 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		lastManStandingCheck();
 
 		final CellPriority cell;
-		synchronized (cellQueue) {
-			if (cellQueue.isEmpty())
-				return;
-			cell = cellQueue.poll();
-			cell.count = 0;
-			cellQueue.add(cell);
-		}
+		if (cellQueue.isEmpty())
+			return;
+		cell = cellQueue.poll();
+		cell.count = 0;
+		cellQueue.add(cell);
 		cell.cell.updatePossibilities();
 	}
 
@@ -79,7 +71,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		return values;
 	}
 
-	protected void setCell(final Cell<E> cell, final E value) {
+	protected void setCell(final @Nonnull Cell<E> cell, @Nonnull final E value) {
 		values.remove(value);
 		cellQueue.remove(cellPriorities.get(cell));
 		cell.setValue(value);

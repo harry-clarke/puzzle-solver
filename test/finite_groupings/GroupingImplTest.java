@@ -24,8 +24,4 @@ class GroupingImplTest {
 				new AbstractCellTest.BooleanAbstractCell());
 		grouping = new GroupingImpl<>(cells, FULL_SET);
 	}
-
-	@Test
-	void testOnCell() {
-	}
 }

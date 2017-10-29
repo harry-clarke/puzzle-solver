@@ -33,15 +33,17 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void addCellPossibilityListener(final @Nonnull CellPossibilityListener<E> listener) {
-		possibilityListeners.add(listener);
+	public void addCellListener(final @Nonnull CellValueListener<E> valueListener,
+								final @Nonnull CellPossibilityListener<E> possibilityListener) {
+		valueUpdater.addCellValueListener(valueListener);
+		possibilityListeners.add(possibilityListener);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void addCellValueListener(final @Nonnull CellValueListener<E> listener) {
+	public void addCellListener(final @Nonnull CellValueListener<E> listener) {
 		valueUpdater.addCellValueListener(listener);
 	}
 
@@ -49,7 +51,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void addCellValueListener(final @Nonnull CellValueListener<E> listener, final @Nonnull E value) {
+	public void addCellListener(final @Nonnull CellValueListener<E> listener, final @Nonnull E value) {
 		valueUpdater.addCellValueListener(listener, value);
 	}
 
@@ -62,8 +64,13 @@ public abstract class AbstractCell<E> implements Cell<E> {
 		this.value = value;
 		valueUpdater.onCellValueUpdate(value);
 		possibilities = Set.of(value);
-		informPossibilityListeners();
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public abstract void updatePossibilities();
 
 	/**
 	 * {@inheritDoc}
@@ -72,8 +79,9 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	@Override
 	public void reducePossibilities(final Set<E> possibilities) {
 		this.possibilities = Sets.intersection(this.possibilities, possibilities);
-		if (possibilities.size() == 1)
-			setValue(possibilities.stream().findFirst().get());
+		final Optional<E> value = possibilities.stream().findFirst();
+		if (possibilities.size() == 1 && value.isPresent())
+			setValue(value.get());
 		else
 			informPossibilityListeners();
 	}
@@ -82,10 +90,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 * Calls all possibility listeners and informs them that this cell has been updated.
 	 */
 	protected final void informPossibilityListeners() {
-		synchronized (possibilityListeners) {
-			possibilityListeners.parallelStream()
-					.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
-		}
+		possibilityListeners.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
 	}
 
 	/**
@@ -122,8 +127,8 @@ public abstract class AbstractCell<E> implements Cell<E> {
 		}
 
 		public void onCellValueUpdate(final E value) {
-			vagueListeners.parallelStream().forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
-			specificListeners.get(value).parallelStream().forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
+			vagueListeners.forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
+			specificListeners.get(value).forEach(l -> l.onCellValueUpdate(AbstractCell.this, value));
 		}
 	}
 }

@@ -11,20 +11,23 @@ import java.util.Set;
 public interface Cell<E> {
 
 	/**
-	 * @param listener A listener to be called when the cell's possibilities change.
+	 * @param valueListener A listener to be called when the cell's value changes.
+	 * @param possibilityListener A listener to be called when the cell's possibilities change.
+	 *                            Not called when the cell can only be one value.
 	 */
-	void addCellPossibilityListener(@Nonnull CellPossibilityListener<E> listener);
+	void addCellListener(@Nonnull CellValueListener<E> valueListener,
+						 @Nonnull CellPossibilityListener<E> possibilityListener);
 
 	/**
 	 * @param listener A listener to be called when the cell's value changes.
 	 */
-	void addCellValueListener(@Nonnull CellValueListener<E> listener);
+	void addCellListener(@Nonnull CellValueListener<E> listener);
 
 	/**
 	 * @param value The value that triggers a call to this listener.
 	 * @param listener A listener to be called when the cell's value changes to the given value.
 	 */
-	void addCellValueListener(@Nonnull CellValueListener<E> listener, @Nonnull E value);
+	void addCellListener(@Nonnull CellValueListener<E> listener, @Nonnull E value);
 
 	/**
 	 * Reduces the possibilities of values that this cell can be by intersecting
@@ -72,6 +75,7 @@ public interface Cell<E> {
 	interface CellValueListener<E> {
 		/**
 		 * @param cell The cell that has been updated.
+		 * @param value The value that has been set.
 		 */
 		void onCellValueUpdate(@Nonnull Cell<E> cell, @Nonnull E value);
 	}

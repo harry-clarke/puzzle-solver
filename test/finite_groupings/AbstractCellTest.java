@@ -1,16 +1,10 @@
 package finite_groupings;
 
-import com.google.common.base.Functions;
-import com.google.common.util.concurrent.Runnables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
-import javax.annotation.Nonnull;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,11 +26,15 @@ class AbstractCellTest {
 	@Test
 	void testAddCellPossibilityListener() {
 		final TestListener listener = new TestListener();
-		abstractCell.addCellPossibilityListener((c, p) -> {
-			assertEquals(abstractCell, c);
-			assertEquals(FULL_SET, p);
-			listener.call();
-		});
+		abstractCell.addCellListener(
+				(c, v) -> {
+					throw new AssertionFailedError();
+					},
+				(c, p) -> {
+					assertEquals(abstractCell, c);
+					assertEquals(FULL_SET, p);
+					listener.call();
+				});
 		abstractCell.updatePossibilities();
 		assertTrue(listener.called);
 	}
@@ -44,7 +42,7 @@ class AbstractCellTest {
 	@Test
 	void testAddCellValueListenerSpecificCalled() {
 		final TestListener listener = new TestListener();
-		abstractCell.addCellValueListener((c, v) -> {
+		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			assertEquals(true, v);
 			listener.call();
@@ -55,7 +53,7 @@ class AbstractCellTest {
 
 	@Test
 	void testAddCellValueListenerSpecificIgnored() {
-		abstractCell.addCellValueListener((c,v) -> {
+		abstractCell.addCellListener((c, v) -> {
 			throw new AssertionFailedError("Shouldn't be called.");
 		}, true);
 		abstractCell.setValue(false);
@@ -64,7 +62,7 @@ class AbstractCellTest {
 	@Test
 	void testAddCellValueListenerVague() {
 		final TestListener listener = new TestListener();
-		abstractCell.addCellValueListener((c,v) -> {
+		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			assertEquals(true, v);
 			listener.call();
@@ -76,9 +74,9 @@ class AbstractCellTest {
 	@Test
 	void testSetValue() {
 		final TestListener listener = new TestListener();
-		abstractCell.addCellPossibilityListener((c,p) -> {
+		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
-			assertEquals(Set.of(true), p);
+			assertEquals(true, v);
 			listener.call();
 		});
 
@@ -97,7 +95,7 @@ class AbstractCellTest {
 	void testReducePossibilities() {
 		final TestListener listener = new TestListener();
 
-		abstractCell.addCellPossibilityListener((c,p) -> {
+		abstractCell.addCellListener((c, p) -> {
 			assertEquals(abstractCell, c);
 			listener.call();
 		});
