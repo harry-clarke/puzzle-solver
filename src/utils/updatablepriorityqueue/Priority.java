@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 29/10/2017.
  */
-public class Priority<E> implements Comparable<Priority<E>> {
+public class Priority<E> implements Comparable<Priority<?>> {
 
 	public static int DEFAULT_COUNT = 0;
 
@@ -50,7 +50,7 @@ public class Priority<E> implements Comparable<Priority<E>> {
 
 
 	@Override
-	public int compareTo(@Nonnull Priority<E> o) {
+	public int compareTo(@Nonnull Priority<?g> o) {
 		return Integer.compare(count, o.count);
 	}
 }
