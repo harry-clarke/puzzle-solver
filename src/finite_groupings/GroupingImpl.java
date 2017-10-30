@@ -24,7 +24,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		if (cells.size() > values.size())
 			throw new IllegalArgumentException(TOO_MANY_CELLS_EXCEPTION_MSG);
 		this.allCells = ImmutableSet.copyOf(cells);
-		this.unpairedCells = Sets.newHashSet(Sets.filter(allCells, Cell::hasValue));
+		this.unpairedCells = Sets.newHashSet(Sets.filter(allCells, cell -> !cell.hasValue()));
 		this.values = Sets.newHashSet(values);
 
 		cells.parallelStream().forEach(c -> c.addCellListener(this::onCellValueSet, this));
@@ -45,14 +45,14 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		lastManStandingCheck();
 	}
 
-	public Set<E> getValues() {
-		return values;
-	}
-
 	protected void onCellValueSet(final @Nonnull Cell<E> cell, final @Nonnull E value) {
 		values.remove(value);
 		unpairedCells.remove(cell);
 		update();
+	}
+
+	public Set<E> getValues() {
+		return values;
 	}
 
 	/**
