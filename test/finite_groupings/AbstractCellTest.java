@@ -1,5 +1,6 @@
 package finite_groupings;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AbstractCellTest {
 
-	public static final Set<Boolean> FULL_SET = Set.of(true, false);
+	public static final ImmutableSet<Boolean> FULL_SET = ImmutableSet.of(true, false);
 
 	AbstractCell<Boolean> abstractCell;
 
