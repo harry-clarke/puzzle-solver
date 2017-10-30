@@ -50,7 +50,7 @@ public class Priority<E> implements Comparable<Priority<?>> {
 
 
 	@Override
-	public int compareTo(@Nonnull Priority<?g> o) {
+	public int compareTo(@Nonnull Priority<?> o) {
 		return Integer.compare(count, o.count);
 	}
 }
