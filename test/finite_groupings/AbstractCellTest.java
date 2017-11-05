@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +22,7 @@ class AbstractCellTest {
 
 	@BeforeEach
 	void setUp() {
-		abstractCell = new BooleanAbstractCell();
+		abstractCell = new MockAbstractCell();
 	}
 
 	@Test
@@ -93,7 +94,7 @@ class AbstractCellTest {
 	}
 
 	@Test
-	void testReducePossibilities() {
+	void testReducePossibilitiesToValue() {
 		final TestListener listener = new TestListener();
 
 		abstractCell.addCellListener((c, p) -> {
@@ -107,10 +108,30 @@ class AbstractCellTest {
 		assertTrue(listener.called);
 	}
 
+	@Test
+	void testReducePossibilities() {
+		final TestListener listener = new TestListener();
+		final AbstractCell<Integer> cell = new AbstractCell<Integer>(Set.of(1, 2, 3)) {
+			@Override
+			public void updatePossibilities() {
+				informPossibilityListeners();
+			}
+		};
+		cell.addCellListener(
+				(c, v) -> {
+					throw new AssertionError();
+				},
+				(c, p) -> {
+					assertEquals(Set.of(1, 2), p);
+					assertEquals(cell, c);
+					listener.call();
+				});
+		cell.reducePossibilities(Set.of(1, 2));
+		assertTrue(listener.called);
+	}
 
-
-	public static class BooleanAbstractCell extends AbstractCell<Boolean> {
-		public BooleanAbstractCell() {
+	public static class MockAbstractCell extends AbstractCell<Boolean> {
+		public MockAbstractCell() {
 			super(FULL_SET);
 		}
 

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static finite_groupings.AbstractCellTest.FULL_SET;
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,8 +21,8 @@ class GroupingImplTest {
 
 	@BeforeEach
 	void setUp() {
-		cells = List.of(new AbstractCellTest.BooleanAbstractCell(),
-				new AbstractCellTest.BooleanAbstractCell());
+		cells = List.of(new AbstractCellTest.MockAbstractCell(),
+				new AbstractCellTest.MockAbstractCell());
 		grouping = new GroupingImpl<>(Sets.newHashSet(cells), FULL_SET);
 	}
 
