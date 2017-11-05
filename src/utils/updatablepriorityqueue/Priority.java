@@ -47,10 +47,8 @@ public class Priority<E> implements Comparable<Priority<?>> {
 		queue.updatePriority(this);
 	}
 
-
-
 	@Override
 	public int compareTo(@Nonnull Priority<?> o) {
-		return Integer.compare(count, o.count);
+		return Integer.compare(o.count, count);
 	}
 }

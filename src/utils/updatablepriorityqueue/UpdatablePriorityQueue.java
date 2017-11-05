@@ -1,6 +1,8 @@
 package utils.updatablepriorityqueue;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import utils.ClassUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,6 +30,14 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	protected void updatePriority(final @Nonnull Priority<E> priority) {
 		queue.remove(priority);
 		queue.add(priority);
+	}
+
+	protected Map<E, Priority<E>> getPriorities() {
+		return priorities;
+	}
+
+	protected PriorityQueue<Priority<E>> getQueue() {
+		return queue;
 	}
 
 	/*
@@ -61,9 +71,10 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 */
 	@Nullable
 	public Priority<E> poll() {
-		final Priority<E> priority = queue.poll();
-		priorities.remove(priority.getValue());
-		return priority;
+		return Optional.ofNullable(queue.poll())
+				.map(Priority::getValue)
+				.map(priorities::remove)
+				.orElse(null);
 	}
 
 	/**
@@ -138,24 +149,11 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	}
 
 	/**
-	 * Returns {@code true} if this collection contains the specified element.
-	 * More formally, returns {@code true} if and only if this collection
-	 * contains at least one element {@code e} such that
-	 * {@code Objects.equals(o, e)}.
-	 *
-	 * @param o element whose presence in this collection is to be tested
-	 * @return {@code true} if this collection contains the specified
-	 * element
-	 * @throws ClassCastException   if the type of the specified element
-	 *                              is incompatible with this collection
-	 *                              (<a href="#optional-restrictions">optional</a>)
-	 * @throws NullPointerException if the specified element is null and this
-	 *                              collection does not permit null elements
-	 *                              (<a href="#optional-restrictions">optional</a>)
+	 * {@inheritDoc}
 	 */
 	@Override
 	public boolean contains(final @Nonnull Object o) {
-		return queue.contains(o);
+		return queue.contains(o) || priorities.containsKey(o);
 	}
 
 	/**
@@ -190,7 +188,7 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	@Override
 	@Nonnull
 	public Object[] toArray() {
-		return stream().toArray();
+		return priorities.keySet().toArray();
 	}
 
 	/**
@@ -239,13 +237,7 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <T> T[] toArray(final @Nonnull T[] a) {
-		return stream().toArray(i -> {
-			if(i > a.length)
-				return (T[]) new Object[i];
-			if (a.length > i)
-				a[i] = null;
-			return a;
-		});
+		return priorities.keySet().toArray(a);
 	}
 
 	/**
@@ -308,7 +300,7 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 *                                       is not supported by this collection
 	 */
 	@Override
-	public boolean remove(final @Nonnull Object o) {
+	public synchronized boolean remove(final @Nonnull Object o) {
 		final Priority<E> priority = priorities.remove(o);
 		return priority != null && queue.remove(priority);
 	}
@@ -334,7 +326,8 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	@Override
 	@Nonnull
 	public boolean containsAll(final @Nonnull Collection<?> c) {
-		return c.stream().allMatch(priorities::containsKey);
+		return c.stream().allMatch(priorities::containsKey)
+				|| c.stream().allMatch(queue::contains);
 	}
 
 	/**
@@ -363,7 +356,9 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 */
 	@Override
 	public boolean addAll(final @Nonnull Collection<? extends E> c) {
-		return c.stream().anyMatch(this::add);
+		return c.stream().map(this::add)
+				.reduce(Boolean::logicalOr)
+				.orElseThrow(NullPointerException::new);
 	}
 
 	/**
@@ -391,7 +386,9 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 */
 	@Override
 	public boolean removeAll(final @Nonnull Collection<?> c) {
-		return c.stream().anyMatch(this::remove);
+		return c.stream().map(this::remove)
+				.reduce(Boolean::logicalOr)
+				.orElseThrow(NullPointerException::new);
 	}
 
 	/**
@@ -418,7 +415,8 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 */
 	@Override
 	public boolean retainAll(final @Nonnull Collection<?> c) {
-		return priorities.keySet().stream().filter(k -> !c.contains(k))
+		return Sets.newHashSet(priorities.keySet()).stream()
+				.filter(k -> !c.contains(k))
 				.peek(this::remove)
 				.findFirst().isPresent();
 	}

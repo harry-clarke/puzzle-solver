@@ -66,8 +66,8 @@ class PriorityTest {
 	void testCompareTo() {
 		final Priority<Object> priority2 = new Priority<>(priorityQueue, new Object());
 		priority.incrementCount();
-		assertEquals(1, priority.compareTo(priority2));
-		assertEquals(-1, priority2.compareTo(priority));
+		assertEquals(1, priority2.compareTo(priority));
+		assertEquals(-1, priority.compareTo(priority2));
 	}
 
 	private void setResetCount(final int count) {
