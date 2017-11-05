@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -141,14 +140,4 @@ class AbstractCellTest {
 		}
 	}
 
-	/**
-	 * Todo: Replace with JMockit.
-	 */
-	public static class TestListener {
-		public boolean called = false;
-
-		public void call() {
-			called = true;
-		}
-	}
 }

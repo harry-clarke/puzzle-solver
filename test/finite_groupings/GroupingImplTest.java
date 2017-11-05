@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static finite_groupings.AbstractCellTest.FULL_SET;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +25,36 @@ class GroupingImplTest {
 		cells = List.of(new AbstractCellTest.MockAbstractCell(),
 				new AbstractCellTest.MockAbstractCell());
 		grouping = new GroupingImpl<>(Sets.newHashSet(cells), FULL_SET);
+	}
+
+	@Test
+	void testTooManyCellsException() {
+		final Set<Cell<Boolean>> cells = Set.of(
+				new AbstractCellTest.MockAbstractCell(),
+				new AbstractCellTest.MockAbstractCell(),
+				new AbstractCellTest.MockAbstractCell()
+		);
+		assertThrows(IllegalArgumentException.class, () -> new GroupingImpl<>(cells, FULL_SET));
+	}
+
+	@Test
+	void testLostCellException() {
+		final Cell<Boolean> lostCell = new AbstractCellTest.MockAbstractCell();
+		assertThrows(IllegalStateException.class,
+				() -> grouping.onCellPossibilityUpdate(lostCell, Set.of()));
+	}
+
+	@Test
+	void testOnCellPossibilityUpdate() {
+		grouping.onCellPossibilityUpdate(cells.get(0), Set.of());
+	}
+
+	@Test
+	void testOnCellValueUpdate() {
+		cells.get(0).setValue(true);
+
+		assertEquals(Set.of(), grouping.getValues());
+		assertEquals(Set.of(), grouping.getUnpairedCells());
 	}
 
 	/*

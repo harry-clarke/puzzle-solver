@@ -50,7 +50,8 @@ public interface Cell<E> {
 	 * @return A set of all possible values for this cell.
 	 * Returns a singleton set if the cell value is set.
 	 */
-	@Nonnull Set<E> getPossibilities();
+	@Nonnull
+	Set<E> getPossibilities();
 
 	/**
 	 * Sets the value of a cell.
@@ -61,7 +62,8 @@ public interface Cell<E> {
 	/**
 	 * @return The value of the cell if set, otherwise Nothing.
 	 */
-	@Nonnull Optional<E> getValue();
+	@Nonnull
+	Optional<E> getValue();
 
 	/**
 	 * @return True if a value has been set, otherwise false.

@@ -1,5 +1,6 @@
 package finite_groupings;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -53,6 +54,10 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 
 	public Set<E> getValues() {
 		return values;
+	}
+
+	protected Set<Cell<E>> getUnpairedCells() {
+		return Collections.unmodifiableSet(unpairedCells);
 	}
 
 	/**

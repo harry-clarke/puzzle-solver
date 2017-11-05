@@ -28,7 +28,7 @@ public class Updater<E> extends UpdatablePriorityQueue<Cell<E>> {
 	@Override
 	public boolean add(@Nonnull Cell<E> cell) {
 		cell.addCellListener(
-				(c, v) -> remove(v),
+				(c, v) -> remove(c),
 				(c, p) -> getPriority(c).resetCount()
 		);
 		return super.add(cell);
