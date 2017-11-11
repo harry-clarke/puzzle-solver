@@ -142,7 +142,7 @@ class AbstractCellTest {
 			assertEquals(abstractCell, c);
 			listener.call();
 		});
-		abstractCell.removePossibilities(false);
+		abstractCell.removePossibility(false);
 
 		assertEquals(Set.of(true), abstractCell.getPossibilities());
 
@@ -172,7 +172,7 @@ class AbstractCellTest {
 					listener.call();
 				}
 		);
-		cell.removePossibilities(3);
+		cell.removePossibility(3);
 		assertTrue(listener.called);
 	}
 

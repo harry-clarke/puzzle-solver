@@ -88,7 +88,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	 * @param possibility The possibility to remove.
 	 */
 	@Override
-	public void removePossibilities(final E possibility) {
+	public void removePossibility(final E possibility) {
 		possibilities.remove(possibility);
 		onPossibilityUpdate();
 	}

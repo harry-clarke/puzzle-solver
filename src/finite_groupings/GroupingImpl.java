@@ -1,6 +1,5 @@
 package finite_groupings;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -45,18 +44,13 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!allCells.contains(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
-		update();
-	}
-
-	public void update() {
-//		Insert grouping techniques here.
-		lastManStandingCheck();
+		updateCellGroupings(cell);
 	}
 
 	protected void onCellValueSet(final @Nonnull Cell<E> cell, final @Nonnull E value) {
 		values.remove(value);
 		unpairedCells.remove(cell);
-		update();
+		unpairedCells.forEach(c -> c.removePossibility(value));
 	}
 
 	public Set<E> getValues() {
@@ -67,20 +61,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		return Collections.unmodifiableSet(unpairedCells);
 	}
 
-	/**
-	 * If there's only one value left, and only cell left, pair them together.
-	 */
-	protected void lastManStandingCheck() {
-		if (unpairedCells.size() != 1 || values.size() != 1)
-			return;
-		unpairedCells.stream().findFirst().ifPresent(
-				cell -> values.stream().findFirst().ifPresent(
-						cell::setValue
-				)
-		);
-	}
-
-	protected void updateCellGroupings(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
+	protected void updateCellGroupings(final @Nonnull Cell<E> cell) {
 
 	}
 }

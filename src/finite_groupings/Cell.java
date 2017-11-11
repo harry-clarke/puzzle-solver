@@ -40,9 +40,10 @@ public interface Cell<E> {
 
 	/**
 	 * Removes the given value as a possibility for this cell.
+	 * Shouldn't fail if the possibility doesn't exist.
 	 * @param possibility The possibility to remove.
 	 */
-	void removePossibilities(E possibility);
+	void removePossibility(E possibility);
 
 	/**
 	 * Looks at the state of the cell and determines what possible values this cell could have.
