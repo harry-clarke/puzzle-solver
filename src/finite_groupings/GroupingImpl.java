@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListener<E> {
 
-	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More allCells than values to put in those allCells.";
+	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
 	protected static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
 
 	private final ImmutableSet<Cell<E>> allCells;
@@ -68,8 +68,12 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 			return;
 		unpairedCells.stream().findFirst().ifPresent(
 				cell -> values.stream().findFirst().ifPresent(
-						value -> cell.setValue(value)
+						cell::setValue
 				)
 		);
+	}
+
+	protected void updateCellGroupings(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
+
 	}
 }
