@@ -79,6 +79,21 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	@Override
 	public void reducePossibilities(final Set<E> possibilities) {
 		this.possibilities = Sets.intersection(this.possibilities, possibilities);
+		onPossibilityUpdate();
+	}
+
+	/**
+	 * Removes the given value as a possibility for this cell.
+	 *
+	 * @param possibility The possibility to remove.
+	 */
+	@Override
+	public void removePossibilities(final E possibility) {
+		possibilities.remove(possibility);
+		onPossibilityUpdate();
+	}
+
+	protected final void onPossibilityUpdate() {
 		final Optional<E> value = possibilities.stream().findFirst();
 		if (possibilities.size() == 1 && value.isPresent())
 			setValue(value.get());

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,13 +97,17 @@ class AbstractCellTest {
 	void testReducePossibilitiesToValue() {
 		final TestListener listener = new TestListener();
 
-		abstractCell.addCellListener((c, p) -> {
+		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			listener.call();
 		});
-		assertTrue(abstractCell.getPossibilities().equals(FULL_SET));
 		abstractCell.reducePossibilities(Set.of(true));
+
 		assertEquals(Set.of(true), abstractCell.getPossibilities());
+
+		Optional<Boolean> value = abstractCell.getValue();
+		assertTrue(value.isPresent());
+		assertEquals(true, value.get());
 
 		assertTrue(listener.called);
 	}
@@ -110,7 +115,7 @@ class AbstractCellTest {
 	@Test
 	void testReducePossibilities() {
 		final TestListener listener = new TestListener();
-		final AbstractCell<Integer> cell = new AbstractCell<Integer>(Set.of(1, 2, 3)) {
+		final AbstractCell<Integer> cell = new AbstractCell<>(Set.of(1, 2, 3)) {
 			@Override
 			public void updatePossibilities() {
 				informPossibilityListeners();
@@ -126,6 +131,48 @@ class AbstractCellTest {
 					listener.call();
 				});
 		cell.reducePossibilities(Set.of(1, 2));
+		assertTrue(listener.called);
+	}
+
+	@Test
+	void testRemovePossibilityToValue() {
+		final TestListener listener = new TestListener();
+
+		abstractCell.addCellListener((c, v) -> {
+			assertEquals(abstractCell, c);
+			listener.call();
+		});
+		abstractCell.removePossibilities(false);
+
+		assertEquals(Set.of(true), abstractCell.getPossibilities());
+
+		Optional<Boolean> value = abstractCell.getValue();
+		assertTrue(value.isPresent());
+		assertEquals(true, value.get());
+
+		assertTrue(listener.called);
+	}
+
+	@Test
+	void testRemovePossibility() {
+		final TestListener listener = new TestListener();
+		final AbstractCell<Integer> cell = new AbstractCell<>(Set.of(1, 2, 3)) {
+			@Override
+			public void updatePossibilities() {
+				informPossibilityListeners();
+			}
+		};
+		cell.addCellListener(
+				(c, v) -> {
+					throw new AssertionError();
+				},
+				(c, p) -> {
+					assertEquals(Set.of(1, 2), p);
+					assertEquals(cell, c);
+					listener.call();
+				}
+		);
+		cell.removePossibilities(3);
 		assertTrue(listener.called);
 	}
 

@@ -39,6 +39,12 @@ public interface Cell<E> {
 	void reducePossibilities(Set<E> possibilities);
 
 	/**
+	 * Removes the given value as a possibility for this cell.
+	 * @param possibility The possibility to remove.
+	 */
+	void removePossibilities(E possibility);
+
+	/**
 	 * Looks at the state of the cell and determines what possible values this cell could have.
 	 * When an assumption is correct, the cell is set and then the runnable is called.
 	 * The Runnable is used to add any extra information about other cells that this assumption opens up.
