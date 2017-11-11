@@ -1,9 +1,12 @@
 package finite_groupings;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,6 +28,15 @@ class GroupingImplTest {
 		cells = List.of(new AbstractCellTest.MockAbstractCell(),
 				new AbstractCellTest.MockAbstractCell());
 		grouping = new GroupingImpl<>(Sets.newHashSet(cells), FULL_SET);
+	}
+
+	@BeforeAll
+	static void testInit() {
+		final GroupingImplTest test = new GroupingImplTest();
+		test.setUp();
+		assertEquals(FULL_SET, test.grouping.getValues());
+		assertEquals(Sets.newHashSet(test.cells), test.grouping.getAllCells());
+		assertEquals(Sets.newHashSet(test.cells), test.grouping.getUnpairedCells());
 	}
 
 	@Test

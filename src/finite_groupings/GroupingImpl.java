@@ -32,6 +32,13 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	}
 
 	/**
+	 * @return All cells belonging to this grouping.
+	 */
+	public Set<Cell<E>> getAllCells() {
+		return allCells;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
