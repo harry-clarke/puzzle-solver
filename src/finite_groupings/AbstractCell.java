@@ -83,9 +83,15 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	}
 
 	/**
-	 * Removes the given value as a possibility for this cell.
-	 *
-	 * @param possibility The possibility to remove.
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void removePossibilities(final Set<E> possibilities) {
+		this.possibilities.removeAll(possibilities);
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void removePossibility(final E possibility) {

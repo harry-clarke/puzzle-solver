@@ -5,12 +5,13 @@ import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 15/10/2017.
  */
-public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListener<E> {
+public class GroupingImpl<E> implements Grouping<E> {
 
 	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
 	protected static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
@@ -27,7 +28,7 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 		this.unpairedCells = Sets.newHashSet(Sets.filter(allCells, cell -> !cell.hasValue()));
 		this.values = Sets.newHashSet(values);
 
-		cells.parallelStream().forEach(c -> c.addCellListener(this::onCellValueSet, this));
+		cells.parallelStream().forEach(c -> c.addCellListener(this::onCellValueSet, this::onCellPossibilityUpdate));
 	}
 
 	/**
@@ -40,7 +41,6 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!allCells.contains(cell))
 			throw new IllegalStateException(LOST_CELL_EXCEPTION_MSG);
@@ -62,6 +62,19 @@ public class GroupingImpl<E> implements Grouping<E>, Cell.CellPossibilityListene
 	}
 
 	protected void updateCellGroupings(final @Nonnull Cell<E> cell) {
-
+		final Set<E> possibilities = cell.getPossibilities();
+		final Set<Cell<E>> subsets = unpairedCells.stream()
+				.filter(c -> possibilities.containsAll(c.getPossibilities()))
+				.collect(Collectors.toSet());
+		// See if a subset can be formed.
+		if (subsets.size() < possibilities.size())
+			return;
+		// Make sure this is the smallest subset we can make.
+		if (subsets.size() > possibilities.size()) {
+			// Todo: Add logic to check the subset for an even smaller subset.
+			return;
+		}
+		// Remove these possibilities from cells outside the subgroup.
+		unpairedCells.forEach(c -> c.removePossibilities(possibilities));
 	}
 }

@@ -39,8 +39,15 @@ public interface Cell<E> {
 	void reducePossibilities(Set<E> possibilities);
 
 	/**
+	 * Removes the given values as possibilities for this cell.
+	 * Shouldn't fail even if one or more of the possibilities don't exist.
+	 * @param possibilities The possibilities to remove.
+	 */
+	void removePossibilities(Set<E> possibilities);
+
+	/**
 	 * Removes the given value as a possibility for this cell.
-	 * Shouldn't fail if the possibility doesn't exist.
+	 * Shouldn't fail even if the possibility doesn't exist.
 	 * @param possibility The possibility to remove.
 	 */
 	void removePossibility(E possibility);

@@ -1,12 +1,16 @@
 package finite_groupings;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
+import org.junit.jupiter.api.function.Executable;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,19 +22,24 @@ class AbstractCellTest {
 
 	public static final ImmutableSet<Boolean> FULL_SET = ImmutableSet.of(true, false);
 
-	AbstractCell<Boolean> abstractCell;
+	protected TestListener listener;
+	protected AbstractCell<Boolean> abstractCell;
+
+	private static <E> void valueListenerAssertionError(final Cell<E> c, final E v) {
+		throw new AssertionError();
+	}
 
 	@BeforeEach
 	void setUp() {
 		abstractCell = new MockAbstractCell();
+		listener = new TestListener();
 	}
 
 	@Test
 	void testAddCellPossibilityListener() {
-		final TestListener listener = new TestListener();
 		abstractCell.addCellListener(
 				(c, v) -> {
-					throw new AssertionFailedError();
+					throw new AssertionError();
 					},
 				(c, p) -> {
 					assertEquals(abstractCell, c);
@@ -43,7 +52,6 @@ class AbstractCellTest {
 
 	@Test
 	void testAddCellValueListenerSpecificCalled() {
-		final TestListener listener = new TestListener();
 		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			assertEquals(true, v);
@@ -56,14 +64,13 @@ class AbstractCellTest {
 	@Test
 	void testAddCellValueListenerSpecificIgnored() {
 		abstractCell.addCellListener((c, v) -> {
-			throw new AssertionFailedError("Shouldn't be called.");
+			throw new AssertionError("Shouldn't be called.");
 		}, true);
 		abstractCell.setValue(false);
 	}
 
 	@Test
 	void testAddCellValueListenerVague() {
-		final TestListener listener = new TestListener();
 		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			assertEquals(true, v);
@@ -75,7 +82,6 @@ class AbstractCellTest {
 
 	@Test
 	void testSetValue() {
-		final TestListener listener = new TestListener();
 		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			assertEquals(true, v);
@@ -95,8 +101,6 @@ class AbstractCellTest {
 
 	@Test
 	void testReducePossibilitiesToValue() {
-		final TestListener listener = new TestListener();
-
 		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			listener.call();
@@ -113,31 +117,7 @@ class AbstractCellTest {
 	}
 
 	@Test
-	void testReducePossibilities() {
-		final TestListener listener = new TestListener();
-		final AbstractCell<Integer> cell = new AbstractCell<>(Set.of(1, 2, 3)) {
-			@Override
-			public void updatePossibilities() {
-				informPossibilityListeners();
-			}
-		};
-		cell.addCellListener(
-				(c, v) -> {
-					throw new AssertionError();
-				},
-				(c, p) -> {
-					assertEquals(Set.of(1, 2), p);
-					assertEquals(cell, c);
-					listener.call();
-				});
-		cell.reducePossibilities(Set.of(1, 2));
-		assertTrue(listener.called);
-	}
-
-	@Test
 	void testRemovePossibilityToValue() {
-		final TestListener listener = new TestListener();
-
 		abstractCell.addCellListener((c, v) -> {
 			assertEquals(abstractCell, c);
 			listener.call();
@@ -154,8 +134,16 @@ class AbstractCellTest {
 	}
 
 	@Test
+	void testReducePossibilities() {
+		assertRemovePossibility(c -> c.reducePossibilities(Set.of(1, 2)));
+	}
+
+	@Test
 	void testRemovePossibility() {
-		final TestListener listener = new TestListener();
+		assertRemovePossibility(c -> c.removePossibility(3));
+	}
+
+	private void assertRemovePossibility(final Consumer<Cell<Integer>> consumer) {
 		final AbstractCell<Integer> cell = new AbstractCell<>(Set.of(1, 2, 3)) {
 			@Override
 			public void updatePossibilities() {
@@ -163,9 +151,7 @@ class AbstractCellTest {
 			}
 		};
 		cell.addCellListener(
-				(c, v) -> {
-					throw new AssertionError();
-				},
+				AbstractCellTest::valueListenerAssertionError,
 				(c, p) -> {
 					assertEquals(Set.of(1, 2), p);
 					assertEquals(cell, c);
