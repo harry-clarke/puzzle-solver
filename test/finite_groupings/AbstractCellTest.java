@@ -38,11 +38,8 @@ class AbstractCellTest {
 	@Test
 	void testAddCellPossibilityListener() {
 		abstractCell.addCellListener(
-				(c, v) -> {
-					throw new AssertionError();
-					},
+				AbstractCellTest::valueListenerAssertionError,
 				(c, p) -> {
-					assertEquals(abstractCell, c);
 					assertEquals(FULL_SET, p);
 					listener.call();
 				});
@@ -53,7 +50,6 @@ class AbstractCellTest {
 	@Test
 	void testAddCellValueListenerSpecificCalled() {
 		abstractCell.addCellListener((c, v) -> {
-			assertEquals(abstractCell, c);
 			assertEquals(true, v);
 			listener.call();
 		}, true);
@@ -63,16 +59,13 @@ class AbstractCellTest {
 
 	@Test
 	void testAddCellValueListenerSpecificIgnored() {
-		abstractCell.addCellListener((c, v) -> {
-			throw new AssertionError("Shouldn't be called.");
-		}, true);
+		abstractCell.addCellListener(AbstractCellTest::valueListenerAssertionError, true);
 		abstractCell.setValue(false);
 	}
 
 	@Test
 	void testAddCellValueListenerVague() {
 		abstractCell.addCellListener((c, v) -> {
-			assertEquals(abstractCell, c);
 			assertEquals(true, v);
 			listener.call();
 		});
@@ -83,7 +76,6 @@ class AbstractCellTest {
 	@Test
 	void testSetValue() {
 		abstractCell.addCellListener((c, v) -> {
-			assertEquals(abstractCell, c);
 			assertEquals(true, v);
 			listener.call();
 		});
@@ -101,10 +93,7 @@ class AbstractCellTest {
 
 	@Test
 	void testReducePossibilitiesToValue() {
-		abstractCell.addCellListener((c, v) -> {
-			assertEquals(abstractCell, c);
-			listener.call();
-		});
+		abstractCell.addCellListener((c, v) -> listener.call());
 		abstractCell.reducePossibilities(Set.of(true));
 
 		assertEquals(Set.of(true), abstractCell.getPossibilities());
@@ -118,10 +107,7 @@ class AbstractCellTest {
 
 	@Test
 	void testRemovePossibilityToValue() {
-		abstractCell.addCellListener((c, v) -> {
-			assertEquals(abstractCell, c);
-			listener.call();
-		});
+		abstractCell.addCellListener((c, v) -> listener.call());
 		abstractCell.removePossibility(false);
 
 		assertEquals(Set.of(true), abstractCell.getPossibilities());
@@ -154,7 +140,6 @@ class AbstractCellTest {
 				AbstractCellTest::valueListenerAssertionError,
 				(c, p) -> {
 					assertEquals(Set.of(1, 2), p);
-					assertEquals(cell, c);
 					listener.call();
 				}
 		);
@@ -170,6 +155,49 @@ class AbstractCellTest {
 		@Override
 		public void updatePossibilities() {
 			informPossibilityListeners();
+		}
+
+		private <E> CellValueListener<E> extendListener(final CellValueListener<E> listener) {
+			return (c, v) -> {
+				assertEquals(this, c);
+				listener.onCellValueUpdate(c, v);
+			};
+		}
+
+		private <E> CellPossibilityListener<E> extendListener(final CellPossibilityListener<E> listener) {
+			return (c, p) -> {
+				assertEquals(this, c);
+				listener.onCellPossibilityUpdate(c, p);
+			};
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void addCellListener(final @Nonnull CellValueListener<Boolean> valueListener,
+									final @Nonnull CellPossibilityListener<Boolean> possibilityListener) {
+			super.addCellListener(
+					extendListener(valueListener),
+					extendListener(possibilityListener)
+			);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void addCellListener(final @Nonnull CellValueListener<Boolean> listener) {
+			super.addCellListener(extendListener(listener));
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void addCellListener(final @Nonnull CellValueListener<Boolean> listener,
+									final @Nonnull Boolean value) {
+			super.addCellListener(extendListener(listener), value);
 		}
 	}
 
