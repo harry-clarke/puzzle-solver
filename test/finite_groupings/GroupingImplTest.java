@@ -57,11 +57,6 @@ class GroupingImplTest {
 	}
 
 	@Test
-	void testOnCellPossibilityUpdate() {
-		grouping.onCellPossibilityUpdate(cells.get(0), Set.of());
-	}
-
-	@Test
 	void testOnCellValueUpdate() {
 		cells.get(0).setValue(true);
 
