@@ -125,6 +125,11 @@ class AbstractCellTest {
 	}
 
 	@Test
+	void testRemovePossibilities() {
+		assertRemovePossibility(c -> c.removePossibilities(Set.of(3)));
+	}
+
+	@Test
 	void testRemovePossibility() {
 		assertRemovePossibility(c -> c.removePossibility(3));
 	}
@@ -143,7 +148,7 @@ class AbstractCellTest {
 					listener.call();
 				}
 		);
-		cell.removePossibility(3);
+		consumer.accept(cell);
 		assertTrue(listener.called);
 	}
 
