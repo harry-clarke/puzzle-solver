@@ -1,15 +1,17 @@
 package finite_groupings;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static finite_groupings.AbstractCellTest.FULL_SET;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,13 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GroupingImplTest {
 
-	List<Cell<Boolean>> cells;
+	List<MockAbstractCell<Boolean>> cells;
 	GroupingImpl<Boolean> grouping;
 
 	@BeforeEach
 	void setUp() {
-		cells = List.of(new AbstractCellTest.MockAbstractCell(),
-				new AbstractCellTest.MockAbstractCell());
+		cells = new MockAbstractCellFactory<>(FULL_SET).createAll();
 		grouping = new GroupingImpl<>(Sets.newHashSet(cells), FULL_SET);
 	}
 
@@ -41,17 +42,14 @@ class GroupingImplTest {
 
 	@Test
 	void testTooManyCellsException() {
-		final Set<Cell<Boolean>> cells = Set.of(
-				new AbstractCellTest.MockAbstractCell(),
-				new AbstractCellTest.MockAbstractCell(),
-				new AbstractCellTest.MockAbstractCell()
-		);
+		final MockAbstractCellFactory<Boolean> factory = new MockAbstractCellFactory<>(FULL_SET);
+		final Set<Cell<Boolean>> cells = Stream.generate(factory).limit(3).collect(Collectors.toSet());
 		assertThrows(IllegalArgumentException.class, () -> new GroupingImpl<>(cells, FULL_SET));
 	}
 
 	@Test
 	void testLostCellException() {
-		final Cell<Boolean> lostCell = new AbstractCellTest.MockAbstractCell();
+		final Cell<Boolean> lostCell = new MockAbstractCell(FULL_SET);
 		assertThrows(IllegalStateException.class,
 				() -> grouping.onCellPossibilityUpdate(lostCell, Set.of()));
 	}
@@ -66,11 +64,56 @@ class GroupingImplTest {
 
 	/*
 	 * Tests:
-	 * lastManStandingCheck
+	 * Last man standing check.
+	 * No subset check.
 	 */
 
+	/**
+	 * Checks that if there is only one cell remaining and only one value to go with it
+	 * that they are paired together to complete the grouping:
+	 * <br/>
+	 * <table>
+	 *     <tr>
+	 *         <th>Cell</th>
+	 *         <th>Possibilities</th>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>A</td>
+	 *         <td>1</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>B</td>
+	 *         <td>?</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>Left</td>
+	 *         <td>2</td>
+	 *     </tr>
+	 *     <br/>
+	 * </table>
+	 * Becomes:
+	 * <br/>
+	 * <tr>
+	 *     <th>Cell</th>
+	 *     <th>Possibilities</th>
+	 * </tr>
+	 * <tr>
+	 *     <td>A</td>
+	 *     <td>1</td>
+	 * </tr>
+	 * <tr>
+	 *     <td>B</td>
+	 *     <td>2</td>
+	 * </tr>
+	 * <tr>
+	 *     <td>Left</td>
+	 *     <td></td>
+	 * </tr>
+	 * </table>
+	 * <br/>
+	 */
 	@Test
-	void testLastManStandingCheck() {
+	void checkLastManStanding() {
 		Cell<Boolean> trueCell = cells.get(0);
 		Cell<Boolean> falseCell = cells.get(1);
 
@@ -86,5 +129,67 @@ class GroupingImplTest {
 		final Optional<Boolean> falseVal = falseCell.getValue();
 		assertTrue(falseVal.isPresent());
 		assertFalse(falseVal.get());
+	}
+
+	/**
+	 * Checks the scenario where a cell's possibilities are reduced yet this doesn't create a subset of any kind.
+	 * <br/>
+	 * <table>
+	 *     <tr>
+	 *         <th>Cell</th>
+	 *         <th>Possibilities</th>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>A</td>
+	 *         <td>1,2,3</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>B</td>
+	 *         <td>1,2,3</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>C</td>
+	 *         <td>1,2,3</td>
+	 *     </tr>
+	 * </table>
+	 * <br/>
+	 * Set to:
+	 * <br/>
+	 * <table>
+	 *     <tr>
+	 *         <th>Cell</th>
+	 *         <th>Possibilities</th>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>A</td>
+	 *         <td>1,2</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>B</td>
+	 *         <td>1,2,3</td>
+	 *     </tr>
+	 *     <tr>
+	 *         <td>C</td>
+	 *         <td>1,2,3</td>
+	 *     </tr>
+	 * </table>
+	 * <br/>
+	 * Is left unchanged.
+	 */
+	@Test
+	void checkNoSubset() {
+		final GroupingImplFactory<Integer> factory = GroupingImplFactory.create(Set.of(1, 2, 3));
+		final Grouping<Integer> grouping = factory.getGrouping();
+
+		Spliterator<MockAbstractCell<Integer>> spliterator = factory.getCells().spliterator();
+		spliterator.tryAdvance(c -> {
+			// Removes possibility 3 from the first cell.
+			c.removePossibility(3);
+			// Check that the cell has been appropriately updated.
+			assertEquals(Set.of(1, 2), c.getPossibilities());
+		});
+
+		// Check that the other 2 cells' possibilities are untouched.
+		spliterator.forEachRemaining(c -> assertEquals(Set.of(1, 2, 3), c.getPossibilities()));
 	}
 }

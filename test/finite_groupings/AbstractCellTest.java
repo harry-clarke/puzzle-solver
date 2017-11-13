@@ -1,15 +1,11 @@
 package finite_groupings;
 
 import com.google.common.collect.ImmutableSet;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
-import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +27,7 @@ class AbstractCellTest {
 
 	@BeforeEach
 	void setUp() {
-		abstractCell = new MockAbstractCell();
+		abstractCell = new MockAbstractCell<>(FULL_SET);
 		listener = new TestListener();
 	}
 
@@ -150,60 +146,6 @@ class AbstractCellTest {
 		);
 		consumer.accept(cell);
 		assertTrue(listener.called);
-	}
-
-	public static class MockAbstractCell extends AbstractCell<Boolean> {
-		public MockAbstractCell() {
-			super(FULL_SET);
-		}
-
-		@Override
-		public void updatePossibilities() {
-			informPossibilityListeners();
-		}
-
-		private <E> CellValueListener<E> extendListener(final CellValueListener<E> listener) {
-			return (c, v) -> {
-				assertEquals(this, c);
-				listener.onCellValueUpdate(c, v);
-			};
-		}
-
-		private <E> CellPossibilityListener<E> extendListener(final CellPossibilityListener<E> listener) {
-			return (c, p) -> {
-				assertEquals(this, c);
-				listener.onCellPossibilityUpdate(c, p);
-			};
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void addCellListener(final @Nonnull CellValueListener<Boolean> valueListener,
-									final @Nonnull CellPossibilityListener<Boolean> possibilityListener) {
-			super.addCellListener(
-					extendListener(valueListener),
-					extendListener(possibilityListener)
-			);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void addCellListener(final @Nonnull CellValueListener<Boolean> listener) {
-			super.addCellListener(extendListener(listener));
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void addCellListener(final @Nonnull CellValueListener<Boolean> listener,
-									final @Nonnull Boolean value) {
-			super.addCellListener(extendListener(listener), value);
-		}
 	}
 
 }

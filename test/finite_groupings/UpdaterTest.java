@@ -6,6 +6,7 @@ import utils.updatablepriorityqueue.Priority;
 
 import java.util.Set;
 
+import static finite_groupings.AbstractCellTest.FULL_SET;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -54,7 +55,7 @@ class UpdaterTest {
 
 	@Test
 	void testValueUpdate() {
-		final Cell<Boolean> cell = new AbstractCellTest.MockAbstractCell();
+		final MockAbstractCell<Boolean> cell = new MockAbstractCell<>(FULL_SET);
 
 		updater.add(cell);
 

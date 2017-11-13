@@ -66,9 +66,10 @@ public class GroupingImpl<E> implements Grouping<E> {
 		final Set<Cell<E>> subsets = unpairedCells.stream()
 				.filter(c -> possibilities.containsAll(c.getPossibilities()))
 				.collect(Collectors.toSet());
-		// See if a subset can be formed.
-		if (subsets.size() < possibilities.size())
-			return;
+		if (subsets.size() < possibilities.size()) {
+			// Todo: Check if this is a child of a subset.
+			return; // This isn't the root of a subset.
+		}
 		// Make sure this is the smallest subset we can make.
 		if (subsets.size() > possibilities.size()) {
 			// Todo: Add logic to check the subset for an even smaller subset.
