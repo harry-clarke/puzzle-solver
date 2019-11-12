@@ -3,17 +3,11 @@ package finite_groupings;
 import com.google.common.collect.*;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-
-import static com.google.common.base.Functions.forSupplier;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
- * @since 15/10/2017.
+ * {@inheritDoc}
  */
 public abstract class AbstractCell<E> implements Cell<E> {
 
@@ -24,7 +18,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 
 	public AbstractCell(final Set<E> possibilities) {
 		this.value = null;
-		this.valueUpdater = new ValueUpdater(possibilities);
+		this.valueUpdater = new ValueUpdater();
 		this.possibilityListeners = Sets.newConcurrentHashSet();
 		this.possibilities = Sets.newConcurrentHashSet(possibilities);
 	}
@@ -56,14 +50,13 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	}
 
 	/**
-	 * Sets the value of a cell.
-	 * @param value The value to set the cell to.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void setValue(final @Nonnull E value) {
 		this.value = value;
-		valueUpdater.onCellValueUpdate(value);
 		possibilities = Set.of(value);
+		valueUpdater.onCellValueUpdate(value);
 	}
 
 	/**
@@ -101,11 +94,12 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	}
 
 	protected final void onPossibilityUpdate() {
-		final Optional<E> value = possibilities.stream().findFirst();
-		if (possibilities.size() == 1 && value.isPresent())
+		if (possibilities.size() == 1) {
+			final Optional<E> value = possibilities.stream().findFirst();
 			setValue(value.get());
-		else
+		} else {
 			informPossibilityListeners();
+		}
 	}
 
 	/**
@@ -137,13 +131,20 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	}
 
 	/**
-	 * Wrapper class for updating all value listeners.
+	 * Container class for updating all value listeners.
 	 */
 	class ValueUpdater {
+		/**
+		 * Vague listeners want to be notified when the cell takes any value.
+		 */
 		private final Set<Cell.CellValueListener<E>> vagueListeners;
+
+		/**
+		 * Specific listeners only want to be notified when the cell has taken a specific value.
+		 */
 		private final Multimap<E, Cell.CellValueListener<E>> specificListeners;
 
-		public ValueUpdater(final Set<E> possibilities) {
+		public ValueUpdater() {
 			vagueListeners = Sets.newConcurrentHashSet();
 			specificListeners = HashMultimap.create();
 		}

@@ -13,13 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 05/11/2017.
  */
-class UpdaterTest {
+class CellUpdaterTest {
 
-	Updater<Boolean> updater;
+	CellUpdater<Boolean> updater;
 
 	@BeforeEach
 	void setUp() {
-		updater = new Updater<>();
+		updater = new CellUpdater<>();
 	}
 
 	@Test
@@ -42,10 +42,11 @@ class UpdaterTest {
 
 		updater.add(cell);
 
-		final Priority<Cell<Boolean>> priority = updater.getPriority(cell);
+		// Todo: Add queue method for changing priority count. Abstract away priorities from external classes.
+		final Priority<Cell<Boolean>> priority = updater.getQueue().getPriority(cell);
 		priority.incrementCount();
 
-		assertTrue(updater.contains(cell));
+		assertTrue(updater.getQueue().contains(cell));
 		assertFalse(listener.called);
 
 		updater.update();
@@ -59,14 +60,14 @@ class UpdaterTest {
 
 		updater.add(cell);
 
-		assertTrue(updater.contains(cell));
+		assertTrue(updater.getQueue().contains(cell));
 		cell.setValue(true);
-		assertFalse(updater.contains(cell));
+		assertFalse(updater.getQueue().contains(cell));
 	}
 
 	@Test
 	void testPossibilityUpdate() {
-		final Updater<Integer> updater = new Updater<>();
+		final CellUpdater<Integer> updater = new CellUpdater<>();
 		final Cell<Integer> cell = new AbstractCell<>(Set.of(1, 2, 3)) {
 			@Override
 			public void updatePossibilities() {
@@ -75,7 +76,7 @@ class UpdaterTest {
 
 		updater.add(cell);
 
-		Priority<Cell<Integer>> priority = updater.getPriority(cell);
+		Priority<Cell<Integer>> priority = updater.getQueue().getPriority(cell);
 		priority.incrementCount();
 
 		cell.reducePossibilities(Set.of(1, 2));

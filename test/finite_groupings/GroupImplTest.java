@@ -1,16 +1,12 @@
 package finite_groupings;
 
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static finite_groupings.AbstractCellTest.FULL_SET;
@@ -20,20 +16,20 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Harry Clarke (hc306@kent.ac.uk).
  * @since 23/10/2017.
  */
-class GroupingImplTest {
+class GroupImplTest {
 
 	List<MockAbstractCell<Boolean>> cells;
-	GroupingImpl<Boolean> grouping;
+	GroupImpl<Boolean> grouping;
 
 	@BeforeEach
 	void setUp() {
 		cells = new MockAbstractCellFactory<>(FULL_SET).createAll();
-		grouping = new GroupingImpl<>(Sets.newHashSet(cells), FULL_SET);
+		grouping = new GroupImpl<>(Sets.newHashSet(cells), FULL_SET);
 	}
 
 	@BeforeAll
 	static void testInit() {
-		final GroupingImplTest test = new GroupingImplTest();
+		final GroupImplTest test = new GroupImplTest();
 		test.setUp();
 		assertEquals(FULL_SET, test.grouping.getValues());
 		assertEquals(Sets.newHashSet(test.cells), test.grouping.getAllCells());
@@ -44,12 +40,12 @@ class GroupingImplTest {
 	void testTooManyCellsException() {
 		final MockAbstractCellFactory<Boolean> factory = new MockAbstractCellFactory<>(FULL_SET);
 		final Set<Cell<Boolean>> cells = Stream.generate(factory).limit(3).collect(Collectors.toSet());
-		assertThrows(IllegalArgumentException.class, () -> new GroupingImpl<>(cells, FULL_SET));
+		assertThrows(IllegalArgumentException.class, () -> new GroupImpl<>(cells, FULL_SET));
 	}
 
 	@Test
 	void testLostCellException() {
-		final Cell<Boolean> lostCell = new MockAbstractCell(FULL_SET);
+		final Cell<Boolean> lostCell = new MockAbstractCell<>(FULL_SET);
 		assertThrows(IllegalStateException.class,
 				() -> grouping.onCellPossibilityUpdate(lostCell, Set.of()));
 	}
@@ -179,7 +175,7 @@ class GroupingImplTest {
 	@Test
 	void checkNoSubset() {
 		final GroupingImplFactory<Integer> factory = GroupingImplFactory.create(Set.of(1, 2, 3));
-		final Grouping<Integer> grouping = factory.getGrouping();
+		final Group<Integer> group = factory.getGrouping();
 
 		Spliterator<MockAbstractCell<Integer>> spliterator = factory.getCells().spliterator();
 		spliterator.tryAdvance(c -> {

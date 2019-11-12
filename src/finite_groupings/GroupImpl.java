@@ -8,26 +8,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
- * @since 15/10/2017.
  */
-public class GroupingImpl<E> implements Grouping<E> {
+public class GroupImpl<E> implements Group<E> {
 
 	protected static final String TOO_MANY_CELLS_EXCEPTION_MSG = "More cells than values to put in those cells.";
 	protected static final String LOST_CELL_EXCEPTION_MSG = "Cell update called by a stranger cell.";
 
+	/**
+	 * All cells in the grouping.
+	 */
 	private final ImmutableSet<Cell<E>> allCells;
+	/**
+	 * All cells that still don't have a value.
+	 */
 	private final Set<Cell<E>> unpairedCells;
+	/**
+	 * All values that haven't yet been paired with a cell.
+	 */
 	private final Set<E> values;
 
-	public GroupingImpl(final @Nonnull Set<Cell<E>> cells,
-						final @Nonnull Set<E> values) {
+	public GroupImpl(final @Nonnull Set<Cell<E>> cells,
+					 final @Nonnull Set<E> values) {
 		if (cells.size() > values.size())
 			throw new IllegalArgumentException(TOO_MANY_CELLS_EXCEPTION_MSG);
 		this.allCells = ImmutableSet.copyOf(cells);
+		//noinspection ConstantConditions
 		this.unpairedCells = Sets.newHashSet(Sets.filter(allCells, cell -> !cell.hasValue()));
 		this.values = Sets.newHashSet(values);
 
+		// Sets the group to listen for changes to any of its cells.
 		cells.parallelStream().forEach(c -> c.addCellListener(this::onCellValueSet, this::onCellPossibilityUpdate));
 	}
 
@@ -39,7 +48,11 @@ public class GroupingImpl<E> implements Grouping<E> {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Kicks off any logical assumptions that can be made about the group now that a cell has different possibilities.
+	 * @see finite_groupings.Cell.CellPossibilityListener
+	 * @param cell A cell in the grouping that's been updated.
+	 * @param possibilities The possible values that this cell could now be.
+	 *                      Values should always be a subset of the previous possible values.
 	 */
 	public void onCellPossibilityUpdate(final @Nonnull Cell<E> cell, final @Nonnull Set<E> possibilities) {
 		if (!allCells.contains(cell))
@@ -47,6 +60,11 @@ public class GroupingImpl<E> implements Grouping<E> {
 		updateCellGroupings(cell);
 	}
 
+	/**
+	 * @see finite_groupings.Cell.CellValueListener
+	 * @param cell A cell in the grouping that's been updated.
+	 * @param value The value that the cell has been paired with.
+	 */
 	protected void onCellValueSet(final @Nonnull Cell<E> cell, final @Nonnull E value) {
 		values.remove(value);
 		unpairedCells.remove(cell);

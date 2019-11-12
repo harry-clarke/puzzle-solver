@@ -5,8 +5,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
- * @since 15/10/2017.
+ * The basic representation of a cell.
+ * The cell can either have a value, or a set of potential values.
+ * The cell also provides listener services to notify other objects when the cell finds new information about its
+ * potential value.
  */
 public interface Cell<E> {
 
@@ -84,6 +86,11 @@ public interface Cell<E> {
 	 */
 	boolean hasValue();
 
+	/**
+	 * Listens for changes in the set of values that a cell could possibly be.
+	 * Is not used when a cell is set to a specific value (i.e. when the set changes to singleton).
+	 * @param <E> The value type.
+	 */
 	@FunctionalInterface
 	interface CellPossibilityListener<E> {
 		/**
@@ -92,6 +99,10 @@ public interface Cell<E> {
 		void onCellPossibilityUpdate(@Nonnull Cell<E> cell, @Nonnull Set<E> possibilities);
 	}
 
+	/**
+	 * Listens to a cell when it is assigned a value.
+	 * @param <E> The value type.
+	 */
 	@FunctionalInterface
 	interface CellValueListener<E> {
 		/**

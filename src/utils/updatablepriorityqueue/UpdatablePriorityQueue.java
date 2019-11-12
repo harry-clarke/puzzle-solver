@@ -2,7 +2,6 @@ package utils.updatablepriorityqueue;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import utils.ClassUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,7 +13,18 @@ import java.util.*;
  */
 public class UpdatablePriorityQueue<E> implements Collection<E> {
 
+	/**
+	 * A mapping of values to their priorities.
+	 * @see Priority
+	 */
 	private final Map<E, Priority<E>> priorities;
+	/**
+	 * The underlying priority queue.
+	 * Uses {@link Priority} instead of the raw value to allow for comparison to be based on a counter instead of on the
+	 * value itself.
+	 * Counter values are updated by first removing, then adding the priority back into the queue
+	 * ({@link UpdatablePriorityQueue#updatePriority(Priority)}).
+	 */
 	private final PriorityQueue<Priority<E>> queue;
 
 	public UpdatablePriorityQueue() {
@@ -41,15 +51,15 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	}
 
 	/*
-	Queue Implementation.
-	Note:
-		Doesn't actually implement Queue because of type erasure issues
-		between Queue<Priority<E>> and Collection<E>.
+		Queue Implementation.
+		Note:
+			Doesn't actually implement Queue because of type erasure issues
+			between Queue<Priority<E>> and Collection<E>.
 
-		Also would implement methods that don't make sense in the context of our priority queue
-		(Add<Priority<E>> for example).
+			Also would implement methods that don't make sense in the context of our priority queue
+			(Add<Priority<E>> for example).
 
-	Todo: See if there's a better way to do this.
+		Todo: See if there's a better way to do this.
 	 */
 
 	/**
@@ -153,6 +163,7 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 */
 	@Override
 	public boolean contains(final @Nonnull Object o) {
+		//noinspection SuspiciousMethodCalls
 		return queue.contains(o) || priorities.containsKey(o);
 	}
 
@@ -234,7 +245,6 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 * @throws NullPointerException if the specified array is null
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <T> T[] toArray(final @Nonnull T[] a) {
 		return priorities.keySet().toArray(a);
@@ -324,10 +334,9 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	 * @see #contains(Object)
 	 */
 	@Override
-	@Nonnull
 	public boolean containsAll(final @Nonnull Collection<?> c) {
-		return c.stream().allMatch(priorities::containsKey)
-				|| c.stream().allMatch(queue::contains);
+		return priorities.keySet().containsAll(c)
+				&& queue.containsAll(c);
 	}
 
 	/**
