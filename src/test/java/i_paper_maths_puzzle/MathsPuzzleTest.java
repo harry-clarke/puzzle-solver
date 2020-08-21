@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 04/10/2017.
  */
 public class MathsPuzzleTest {

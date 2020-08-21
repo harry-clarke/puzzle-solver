@@ -7,7 +7,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 12/11/2017.
  */
 public class MockAbstractCell<E> extends AbstractCell<E> {

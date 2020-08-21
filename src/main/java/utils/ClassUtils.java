@@ -3,7 +3,7 @@ package utils;
 import java.util.Optional;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 04/10/2017.
  */
 public final class ClassUtils {

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 29/10/2017.
  */
 public class UpdatablePriorityQueue<E> implements Collection<E> {

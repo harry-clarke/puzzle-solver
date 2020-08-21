@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com)
  * @since 22/10/2017.
  */
 class AbstractCellTest {

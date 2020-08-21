@@ -12,7 +12,7 @@ import static i_paper_maths_puzzle.pojos.Line.CELL_COUNT;
 import static i_paper_maths_puzzle.pojos.Line.LINE_LENGTH;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 03/10/2017.
  */
 public class MathsPuzzle {

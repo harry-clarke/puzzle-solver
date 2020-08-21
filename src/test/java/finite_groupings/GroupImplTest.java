@@ -13,7 +13,7 @@ import static finite_groupings.AbstractCellTest.FULL_SET;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 23/10/2017.
  */
 class GroupImplTest {

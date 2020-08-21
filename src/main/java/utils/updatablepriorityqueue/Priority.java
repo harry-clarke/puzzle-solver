@@ -15,7 +15,7 @@ public class Priority<E> implements Comparable<Priority<?>> {
 	/**
 	 * The parent queue that this priority belongs to.
 	 */
-	private UpdatablePriorityQueue<E> queue;
+	private final UpdatablePriorityQueue<E> queue;
 	private int count;
 
 	private final E value;

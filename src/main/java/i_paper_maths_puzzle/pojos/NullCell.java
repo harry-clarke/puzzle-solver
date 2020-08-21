@@ -1,7 +1,7 @@
 package i_paper_maths_puzzle.pojos;
 
 /**
- * @author Harry Clarke (hc306@kent.ac.uk).
+ * @author Harry Clarke (harry-clarke@outlook.com).
  * @since 04/10/2017.
  */
 public class NullCell implements Cell {
