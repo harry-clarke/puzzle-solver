@@ -5,8 +5,6 @@ import com.google.common.collect.Sets;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  */
 public class GroupImpl<E> implements Group<E> {
@@ -81,21 +79,64 @@ public class GroupImpl<E> implements Group<E> {
 		return Collections.unmodifiableSet(unpairedCells);
 	}
 
+
+	private static class Context<E> {
+		Set<Cell<E>> includedCells = new HashSet<>();
+		Set<E> includedValues = new HashSet<>();
+
+		private Context<E> copy() {
+			final Context<E> copy = new Context<>();
+			copy.includedCells = new HashSet<>(this.includedCells);
+			copy.includedValues = new HashSet<>(this.includedValues);
+			return copy;
+		}
+	}
+
 	protected void updateCellGroupings(final @Nonnull Cell<E> cell) {
-		final Set<E> possibilities = cell.getPossibilities();
-		final Set<Cell<E>> subsets = unpairedCells.stream()
-				.filter(c -> possibilities.containsAll(c.getPossibilities()))
-				.collect(Collectors.toSet());
-		if (subsets.size() < possibilities.size()) {
-			// Todo: Check if this is a child of a subset.
-			return; // This isn't the root of a subset.
+	    findSubGroups(new Context<>(), cell);
+	}
+
+	protected Group<E> contextToSubGroup(final Context<E> context) {
+		final Set<Cell<E>> outcasts = Set.copyOf(Sets.difference(getUnpairedCells(), context.includedCells));
+		for (final Cell<E> cell : outcasts) {
+			cell.removePossibilities(context.includedValues);
 		}
-		// Make sure this is the smallest subset we can make.
-		if (subsets.size() > possibilities.size()) {
-			// Todo: Add logic to check the subset for an even smaller subset.
-			return;
+	    return new GroupImpl<>(context.includedCells, context.includedValues);
+    }
+
+	protected List<Group<E>> findSubGroups(final Context<E> context, final Cell<E> cell) {
+		context.includedCells.add(cell);
+		context.includedValues.addAll(cell.getPossibilities());
+		if (isCompleteSubGroup(context)) {
+			if (getUnpairedCells().size() == context.includedCells.size())
+				return List.of();
+			final Group<E> subGroup = contextToSubGroup(context);
+			// Todo continue to look for other sub groups
+			return List.of(subGroup);
 		}
-		// Remove these possibilities from cells outside the subgroup.
-		unpairedCells.forEach(c -> c.removePossibilities(possibilities));
+		final Context<E> contextCopy = context.copy();
+        final E variable = cell.getPossibilities().stream().findAny().orElseThrow();
+        return findSubGroups(contextCopy, variable);
+	}
+
+	protected List<Group<E>> findSubGroups(final Context<E> context, final E value) {
+		final List<Cell<E>> cells = getUnpairedCells()
+                .stream()
+				.filter(c -> !context.includedCells.contains(c))
+                .filter(c -> c.getPossibilities().contains(value))
+                .sorted(Comparator.comparingInt(c -> c.getPossibilities().size()))
+                .toList();
+		for (final Cell<E> cell : cells) {
+		    final Context<E> contextCopy = context.copy();
+		    final List<Group<E>> subGroups = findSubGroups(contextCopy, cell);
+		    if (!subGroups.isEmpty()) {
+		        return subGroups;
+            }
+        }
+		return List.of();
+	}
+
+	protected static boolean isCompleteSubGroup(final Context<?> context) {
+		return context.includedCells.size() == context.includedValues.size();
 	}
 }

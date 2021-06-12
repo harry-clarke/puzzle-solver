@@ -192,13 +192,12 @@ class GroupImplTest {
 	@Test
 	void checkSmallerSubset() {
 		final List<MockAbstractCell<Integer>> cells = MockAbstractCellFactory.createAll(Set.of(1, 2, 3));
-		final MockAbstractCell<Integer> cell = new MockAbstractCell<>(Set.of(1, 2, 3, 4));
-		cells.add(cell);
-		final Group<Integer> grouping = new GroupImpl<>(Sets.newHashSet(cells), Set.of(1, 2, 3, 4));
-
-		cell.removePossibility(1);
-		assertTrue(cell.getValue().isPresent());
-		assertEquals(4, (int) cell.getValue().get());
+		final MockAbstractCell<Integer> zebraCell = new MockAbstractCell<>(Set.of(1, 2, 3, 4));
+		cells.add(zebraCell);
+		final GroupImpl<Integer> grouping = new GroupImpl<>(Sets.newHashSet(cells), Set.of(1, 2, 3, 4));
+		final MockAbstractCell<Integer> cell = cells.stream().findAny().orElseThrow();
+		grouping.updateCellGroupings(cell);
+		assertEquals(4, (int) zebraCell.getValue().orElseThrow());
 
 	}
 }
