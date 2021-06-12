@@ -6,8 +6,6 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
-/**
- */
 public final class GroupingImplFactory<E> {
 
 	@Nonnull

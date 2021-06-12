@@ -43,6 +43,7 @@ public class GroupImpl<E> implements Group<E> {
 	/**
 	 * @return All cells belonging to this grouping.
 	 */
+	@Override
 	public Set<Cell<E>> getAllCells() {
 		return allCells;
 	}
@@ -71,6 +72,7 @@ public class GroupImpl<E> implements Group<E> {
 		unpairedCells.forEach(c -> c.removePossibility(value));
 	}
 
+	@Override
 	public Set<E> getValues() {
 		return values;
 	}

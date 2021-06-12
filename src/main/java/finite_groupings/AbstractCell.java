@@ -105,7 +105,7 @@ public abstract class AbstractCell<E> implements Cell<E> {
 	/**
 	 * Calls all possibility listeners and informs them that this cell has been updated.
 	 */
-	protected final void informPossibilityListeners() {
+	protected void informPossibilityListeners() {
 		possibilityListeners.forEach(l -> l.onCellPossibilityUpdate(this, possibilities));
 	}
 
