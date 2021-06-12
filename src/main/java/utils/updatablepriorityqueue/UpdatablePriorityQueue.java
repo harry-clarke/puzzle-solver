@@ -336,7 +336,7 @@ public class UpdatablePriorityQueue<E> implements Collection<E> {
 	@Override
 	public boolean containsAll(final @Nonnull Collection<?> c) {
 		return priorities.keySet().containsAll(c)
-				&& queue.containsAll(c);
+				|| queue.containsAll(c);
 	}
 
 	/**
